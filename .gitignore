@@ -1,2 +1,8 @@
 *.class
 *.log
+
+.bloop
+.idea
+.idea_modules
+.metals
+out/*
