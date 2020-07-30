@@ -6,7 +6,7 @@ import com.example.models.Note
 
 case class NoteResponse(
     id: UUID,
-    title: String,
+    title: Option[String],
     body: String,
     createdAt: OffsetDateTime
 )

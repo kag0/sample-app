@@ -5,17 +5,19 @@ import java.time.OffsetDateTime
 import java.time.Instant
 import java.time.ZoneOffset
 
+import com.example.util.AutoSomeMagnet
+
 case class Note(
     id: UUID,
     userId: UUID,
-    title: String,
+    title: Option[String],
     body: String,
     createdAt: OffsetDateTime,
     deletedAt: Option[OffsetDateTime]
 )
 
 object Note {
-  def apply(userId: UUID, title: String, body: String) =
+  def apply(userId: UUID, title: AutoSomeMagnet[String], body: String) =
     new Note(
       new UUID(0, 0),
       userId,

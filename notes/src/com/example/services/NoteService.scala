@@ -2,12 +2,18 @@ package com.example.services
 
 import com.example.models.Note
 import java.util.UUID
+
 import monix.eval.Task
 import java.time.Clock
+
 import io.getquill.PostgresMonixJdbcContext
 import io.getquill.SnakeCase
 import com.example.util.Db._
 import java.time.OffsetDateTime
+
+import com.example.util.Patch
+import com.example.util.Patch._
+import cats.implicits._
 
 class NoteService(ctx: PostgresMonixJdbcContext[SnakeCase])(implicit
     clock: Clock
@@ -32,6 +38,24 @@ class NoteService(ctx: PostgresMonixJdbcContext[SnakeCase])(implicit
           .returningGenerated(n => (n.id, n.createdAt))
       )
       .map { case (id, ca) => note.copy(id = id, createdAt = ca) }
+  }
+
+  def update(id: UUID, title: Patch[String], body: Option[String]) = {
+    val noteQuery = nonDeletedQuery.filter(_.id == lift(id))
+
+    ctx
+      .transaction(
+        (
+          title.handle(
+            t => ctx.run(noteQuery.update(_.title -> lift(t))),
+            ctx.run(
+              noteQuery.update(_.title -> None)
+            )
+          ),
+          body.handle(b => ctx.run(noteQuery.update(_.body -> lift(b))))
+        )
+          .parMapN((_, _) => ())
+      )
   }
 
   def delete(id: UUID) =
